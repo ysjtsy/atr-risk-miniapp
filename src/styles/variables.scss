@@ -1,0 +1,46 @@
+page {
+  /* ===== TDesign 设计规范：语义色 ===== */
+  --bg-page: #f5f6fa;
+  --bg-card: #ffffff;
+  --bg-section: #f9fafb;
+  --bg-elevated: #ffffff;
+
+  --text-primary: #1d2129;
+  --text-secondary: #4e5969;
+  --text-tertiary: #a0a7b3;
+  --text-strong: #0f172a;
+
+  --border-color: #e3e6eb;
+  --border-strong: #cdd0d6;
+  --shadow-card: rgba(16, 30, 115, 0.08);
+
+  --brand-color: #0052d9;
+  --brand-color-light: #e0ebff;
+  --success-color: #00a870;
+  --danger-color: #d54941;
+  --warning-color: #ed7b2f;
+
+  --price-up: #00a870;
+  --price-down: #d54941;
+
+  --error-bg: rgba(213, 73, 65, 0.1);
+  --error-border: rgba(213, 73, 65, 0.4);
+  --error-text: #a8071a;
+
+  /* ===== TDesign 尺寸体系 ===== */
+  --page-padding-x: 32rpx;
+  --page-padding-y: 40rpx;
+  --block-gap: 32rpx;
+  --card-padding-x: 32rpx;
+  --card-padding-y: 28rpx;
+  --control-height: 96rpx;
+  --control-radius: 24rpx;
+  --card-radius: 32rpx;
+  --pill-radius: 999rpx;
+
+  --font-title: 32rpx;
+  --font-label: 28rpx;
+  --font-body: 28rpx;
+  --font-small: 24rpx;
+  --font-number: 34rpx;
+}
