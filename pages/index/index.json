@@ -1,7 +1,0 @@
-{
-  "usingComponents": {
-    "UiSection": "/components/ui-section/ui-section",
-    "UiButton": "/components/ui-button/ui-button",
-    "UiResultCard": "/components/ui-result-card/ui-result-card"
-  }
-}
