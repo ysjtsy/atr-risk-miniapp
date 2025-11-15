@@ -22,8 +22,8 @@
 
     <view class="price-item price-row-bg">
       <view class="price-title">合约 - 现货</view>
-      <view class="price-value {{priceDiff >= 0 ? 'price-up' : 'price-down'}}">
-        {{priceDiff || '-'}}
+      <view class="price-value {{priceDiff === null ? '' : (priceDiff >= 0 ? 'price-up' : 'price-down')}}">
+        {{priceDiff === null ? '-' : priceDiff}}
       </view>
     </view>
   </view>
