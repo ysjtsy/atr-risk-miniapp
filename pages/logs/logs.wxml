@@ -1,6 +1,10 @@
-<!--logs.wxml-->
-<scroll-view class="scrollarea" scroll-y type="list">
-  <block wx:for="{{logs}}" wx:key="timeStamp" wx:for-item="log">
-    <view class="log-item">{{index + 1}}. {{log.date}}</view>
-  </block>
-</scroll-view>
+<view class="container logs-container">
+  <view class="section logs-section">
+    <view class="label">历史记录</view>
+    <scroll-view class="logs-scroll" scroll-y type="list">
+      <block wx:for="{{logs}}" wx:key="timeStamp" wx:for-item="log">
+        <view class="log-item">{{index + 1}}. {{log.date}}</view>
+      </block>
+    </scroll-view>
+  </view>
+</view>
