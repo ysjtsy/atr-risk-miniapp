@@ -327,6 +327,11 @@ onLoad(() => {
 </script>
 
 <style scoped>
+.container {
+  max-width: 680rpx;
+  margin: 0 auto;
+}
+
 .error {
   margin-top: 24rpx;
   padding: 20rpx;

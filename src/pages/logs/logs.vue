@@ -36,13 +36,24 @@ onLoad(() => {
 </script>
 
 <style scoped>
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .scrollarea {
-  max-height: 70vh;
+  flex: 1;
+  overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 .log-item {
   margin-top: 20rpx;
   text-align: center;
+}
+
+.log-item:last-child {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 </style>
