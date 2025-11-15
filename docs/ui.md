@@ -4,7 +4,7 @@
 
 专业、克制、接近交易终端（TradingView / Binance Pro）
 
-暗色主题
+浅色科技工具面板（与 styles/base.wxss 的实现保持一致）
 
 组件可复用
 
@@ -13,33 +13,33 @@
 便于未来扩展到 Web / iOS / Android
 
 2. 色板规范（Colors）
-2.1 基础色
+2.1 基础色（与 styles/base.wxss 一致）
 名称	用途	值
-color.bg.body	页面背景	#020617
-color.bg.card	普通卡片（Section/价格卡）	#020617
-color.bg.cardElevated	强调卡片（结果卡片）	渐变：#111827 → #020617
-color.border.subtle	普通边框	#1f2937
-color.border.strong	强调边框	#30363d
+color.bg.body	页面背景	#F3F4F6
+color.bg.card	普通卡片（Section/价格卡）	#FFFFFF
+color.bg.cardElevated	强调卡片（结果卡片）	#FFFFFF（配合阴影）
+color.border.subtle	普通边框	#E5E7EB
+color.border.strong	强调边框	#D1D5DB
 2.2 文本色
 名称	用途	值
-color.text.primary	主文案	#e5e7eb
-color.text.secondary	字段标题	#9ca3af
-color.text.muted	弱说明文本	#6b7280
+color.text.primary	主文案	#111827
+color.text.secondary	字段标题	#4B5563
+color.text.muted	弱说明文本	#6B7280
 2.3 品牌与状态色
 名称	用途	值
-color.brand.primary	主按钮	#2563eb → #7c3aed
-color.state.long	多单高亮	#10b981
-color.state.short	空单高亮	#ef4444
-color.state.warning	关键数值强调（例如仓位数量）	#fbbf24
+color.brand.primary	主按钮	渐变：#3B82F6 → #6366F1
+color.state.long	多单高亮	#16A34A
+color.state.short	空单高亮	#DC2626
+color.state.warning	关键数值强调（例如仓位数量）	#2563EB
 2.4 价格色（涨/跌）
 名称	用途	值
-color.price.up	价格上涨	#22c55e
-color.price.down	价格下跌	#ef4444
+color.price.up	价格上涨	#16A34A
+color.price.down	价格下跌	#DC2626
 2.5 错误提示
 名称	用途	值
-color.feedback.errorBg	错误背景	rgba(239,68,68,0.08)
-color.feedback.errorBorder	错误边框	rgba(239,68,68,0.4)
-color.feedback.errorText	错误文字	#fecaca
+color.feedback.errorBg	错误背景	#FEE2E2
+color.feedback.errorBorder	错误边框	#FCA5A5
+color.feedback.errorText	错误文字	#B91C1C
 3. 字体与字号（Typography）
 名称	用途	样式
 font.title	页面主标题	32rpx / 粗体
