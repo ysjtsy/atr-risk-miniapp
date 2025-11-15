@@ -1,0 +1,8 @@
+<button
+  class="btn"
+  loading="{{ loading }}"
+  disabled="{{ disabled }}"
+  bindtap="onTap"
+>
+  {{ text }}
+</button>

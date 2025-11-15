@@ -1,6 +1,5 @@
 // pages/index/index.js
 
-// 引入工具函数 & 配置
 const { calcATR } = require('../../utils/atr.js');
 const {
   fetchCandlesFromBinance,
@@ -11,10 +10,13 @@ const {
   SYMBOL_OPTIONS,
   INTERVAL_OPTIONS
 } = require('../../config/trading.js');
+const {
+  calcPositionSize
+} = require('../../utils/risk.js');
 
 Page({
   data: {
-    // ▼ 交易对列表（默认 BTCUSDT）
+    // ▼ 交易对列表 & 当前选择
     symbolOptions: SYMBOL_OPTIONS,
     symbol: 'BTCUSDT',
 
@@ -22,31 +24,45 @@ Page({
     intervalOptions: INTERVAL_OPTIONS,
     interval: '1h',
 
-    // 输入（全部用字符串，避免小数点被覆盖）
+    // ▼ ATR 输入（字符串，避免输入被覆盖）
     atrPeriodInput: '14',
     atrMultInput: '1.5',
-    entryPriceInput: '',
 
+    // ▼ 风控输入
+    equityInput: '',          // 总本金（U）
+    riskPercentInput: '',     // 单笔风险比例（%）
+    leverageInput: '',        // 杠杆倍数
+
+    // ▼ 开仓 & 方向
+    entryPriceInput: '',
     directionOptions: ['多单', '空单'],
     direction: 'long',
 
-    // 最新价格展示
+    // ▼ 最新价格展示
     spotPrice: null,
     futuresPrice: null,
     priceDiff: null, // 合约 - 现货
 
+    // ▼ 计算结果
     loading: false,
     atr: null,
     stopLossPrice: null,
-    error: ''
+    error: '',
+    rrRatio: null,            // ⭐ 新增：RR 显示用
+
+    // ▼ 仓位计算结果
+    riskAmount: null,
+    stopDistance: null,
+    positionNotional: null,
+    positionQty: null
   },
 
   onLoad() {
-    // 初始化时拉一次价格
     this.refreshPrices();
   },
 
-  // ▼ 交易对选择
+  // ====== 下拉选择 ======
+
   onSymbolSelect(e) {
     const idx = Number(e.detail.value);
     const symbol = this.data.symbolOptions[idx];
@@ -55,13 +71,18 @@ Page({
     });
   },
 
-  // ▼ K线周期选择
   onIntervalSelect(e) {
     const idx = Number(e.detail.value);
     this.setData({ interval: this.data.intervalOptions[idx] });
   },
 
-  // ▼ 输入相关
+  onDirectionChange(e) {
+    const idx = Number(e.detail.value);
+    this.setData({ direction: idx === 0 ? 'long' : 'short' });
+  },
+
+  // ====== 输入处理（全都存字符串） ======
+
   onAtrPeriodInput(e) {
     this.setData({ atrPeriodInput: e.detail.value });
   },
@@ -70,16 +91,24 @@ Page({
     this.setData({ atrMultInput: e.detail.value });
   },
 
-  onDirectionChange(e) {
-    const idx = Number(e.detail.value);
-    this.setData({ direction: idx === 0 ? 'long' : 'short' });
+  onEquityInput(e) {
+    this.setData({ equityInput: e.detail.value });
+  },
+
+  onRiskPercentInput(e) {
+    this.setData({ riskPercentInput: e.detail.value });
+  },
+
+  onLeverageInput(e) {
+    this.setData({ leverageInput: e.detail.value });
   },
 
   onEntryPriceInput(e) {
     this.setData({ entryPriceInput: e.detail.value });
   },
 
-  // ▼ 刷新价格（现货 + 合约）
+  // ====== 刷新价格（现货 + 合约） ======
+
   refreshPrices() {
     const { symbol } = this.data;
 
@@ -106,20 +135,7 @@ Page({
       });
   },
 
-  // 一键用合约价填入开仓价
-  onUseFuturesPrice() {
-    const { futuresPrice } = this.data;
-    if (!futuresPrice) {
-      this.setData({ error: '暂未获取到合约价格，请先点击刷新价格' });
-      return;
-    }
-    this.setData({
-      entryPriceInput: String(futuresPrice),
-      error: ''
-    });
-  },
-
-  // ▼ 计算 ATR + 止损价
+  // ====== 核心：计算 ATR + 止损 + 仓位 ======
   onCalcTap() {
     const {
       atrPeriodInput,
@@ -127,18 +143,31 @@ Page({
       entryPriceInput,
       direction,
       symbol,
-      interval
+      interval,
+      equityInput,
+      riskPercentInput,
+      leverageInput
     } = this.data;
 
+    // 解析数字
     const atrPeriod = parseInt(atrPeriodInput, 10);
     const atrMult = parseFloat(atrMultInput);
     const entryPrice = parseFloat(entryPriceInput);
+    const equity = parseFloat(equityInput);
+    const riskPercent = parseFloat(riskPercentInput);
+    const leverage = parseFloat(leverageInput);
 
+    // 基础校验：先保证 ATR 与止损能算
     if (!entryPrice || Number.isNaN(entryPrice) || entryPrice <= 0) {
       this.setData({
-        error: '开仓价无效，请输入或使用“用合约价填入开仓价”',
+        error: '开仓价无效，请输入开仓价',
         atr: null,
-        stopLossPrice: null
+        stopLossPrice: null,
+        riskAmount: null,
+        stopDistance: null,
+        positionNotional: null,
+        positionQty: null,
+        rrRatio: null
       });
       return;
     }
@@ -147,7 +176,12 @@ Page({
       this.setData({
         error: 'ATR 周期无效，请输入大于 0 的整数',
         atr: null,
-        stopLossPrice: null
+        stopLossPrice: null,
+        riskAmount: null,
+        stopDistance: null,
+        positionNotional: null,
+        positionQty: null,
+        rrRatio: null
       });
       return;
     }
@@ -156,7 +190,12 @@ Page({
       this.setData({
         error: 'ATR 倍数无效，请输入大于 0 的数字',
         atr: null,
-        stopLossPrice: null
+        stopLossPrice: null,
+        riskAmount: null,
+        stopDistance: null,
+        positionNotional: null,
+        positionQty: null,
+        rrRatio: null
       });
       return;
     }
@@ -165,10 +204,15 @@ Page({
       loading: true,
       error: '',
       atr: null,
-      stopLossPrice: null
+      stopLossPrice: null,
+      riskAmount: null,
+      stopDistance: null,
+      positionNotional: null,
+      positionQty: null,
+      rrRatio: null
     });
 
-    // 用现货K线算 ATR（更稳定，不受合约资金费率影响）
+    // 先用现货 K 线算 ATR
     fetchCandlesFromBinance(symbol, interval, 200)
       .then(candles => {
         const atr = calcATR(candles, atrPeriod);
@@ -180,18 +224,64 @@ Page({
           return;
         }
 
-        let stopLoss;
+        // 1）计算止损价格（基于 ATR）
+        let stopLossPrice;
         if (direction === 'long') {
-          stopLoss = entryPrice - atrMult * atr;
+          stopLossPrice = entryPrice - atrMult * atr;
         } else {
-          stopLoss = entryPrice + atrMult * atr;
+          stopLossPrice = entryPrice + atrMult * atr;
         }
 
-        this.setData({
+        // 2）计算风险距离（entry 与 SL 的点差）
+        let riskDistance;
+        if (direction === 'long') {
+          riskDistance = entryPrice - stopLossPrice;
+        } else {
+          riskDistance = stopLossPrice - entryPrice;
+        }
+
+        // 3）计算 RR（这里先用 ATR 倍数作为 reward/risk）
+        const rrValue = atrMult; // reward / risk，本质就是 ATR 倍数
+        const rrText = `1 : ${rrValue.toFixed(2)}`;
+
+        // 4）基础结果（无风控参数时也能显示）
+        const baseResult = {
           loading: false,
           atr: atr.toFixed(2),
-          stopLossPrice: stopLoss.toFixed(2)
-        });
+          stopLossPrice: stopLossPrice.toFixed(2),
+          stopDistance: riskDistance.toFixed(2),
+          rrRatio: rrText
+        };
+
+        // 5）如果风控参数完整，计算仓位
+        if (
+          !Number.isNaN(equity) && equity > 0 &&
+          !Number.isNaN(riskPercent) && riskPercent > 0 &&
+          !Number.isNaN(leverage) && leverage > 0
+        ) {
+          const pos = calcPositionSize({
+            equity,
+            riskPercent,
+            leverage,
+            entryPrice,
+            stopLossPrice
+          });
+
+          if (pos) {
+            this.setData({
+              ...baseResult,
+              riskAmount: pos.riskAmount.toFixed(2),
+              // 这里用风控里的 stopDistance 也可以，
+              // 如果你更相信 ATR 算出的，就保留 baseResult 的 stopDistance
+              positionNotional: pos.finalNotional.toFixed(2),
+              positionQty: pos.qty.toFixed(4)
+            });
+            return;
+          }
+        }
+
+        // 6）风控参数不完整，只展示 ATR / SL / RR / 距离
+        this.setData(baseResult);
       })
       .catch(err => {
         console.error('请求K线失败', err);

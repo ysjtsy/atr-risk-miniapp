@@ -1,29 +1,30 @@
 <view class="container">
 
 <!-- 交易对选择 -->
-<view class="section">
-  <view class="label">交易对</view>
+<UiSection label="交易对">
   <picker mode="selector" range="{{symbolOptions}}" bindchange="onSymbolSelect">
     <view class="picker">当前：{{symbol}}</view>
   </picker>
-</view>
+</UiSection>
 
 <!-- 最新价格 -->
-<view class="section">
-  <view class="label">最新价格</view>
-
+<UiSection label="最新价格">
   <view class="price-grid">
-    <view class="price-item">
+    <view class="price-item price-row-bg">
       <view class="price-title">现货</view>
       <view class="price-value">{{spotPrice || '-'}}</view>
     </view>
-    <view class="price-item">
+
+    <view class="price-item price-row-bg">
       <view class="price-title">合约</view>
       <view class="price-value">{{futuresPrice || '-'}}</view>
     </view>
-    <view class="price-item">
+
+    <view class="price-item price-row-bg">
       <view class="price-title">合约 - 现货</view>
-      <view class="price-value">{{priceDiff || '-'}}</view>
+      <view class="price-value {{priceDiff >= 0 ? 'price-up' : 'price-down'}}">
+        {{priceDiff || '-'}}
+      </view>
     </view>
   </view>
 
@@ -31,80 +32,109 @@
     <button class="mini-btn" size="mini" bindtap="refreshPrices">
       刷新价格
     </button>
-    <button class="mini-btn" size="mini" bindtap="onUseFuturesPrice">
-      用合约价填入开仓价
-    </button>
   </view>
-</view>
+</UiSection>
 
-<!-- K线周期（用于 ATR） -->
-<view class="section">
-  <view class="label">K线周期（ATR 使用此周期）</view>
+<!-- K线周期（ATR 使用此周期） -->
+<UiSection label="K线周期（ATR 使用此周期）">
   <picker mode="selector" range="{{intervalOptions}}" bindchange="onIntervalSelect">
     <view class="picker">当前：{{interval}}</view>
   </picker>
-</view>
+</UiSection>
 
 <!-- ATR 周期 -->
-<view class="section">
-  <view class="label">ATR 周期</view>
+<UiSection label="ATR 周期">
   <input
     type="number"
     value="{{atrPeriodInput}}"
     placeholder="14"
     bindinput="onAtrPeriodInput"
   />
-</view>
+</UiSection>
 
 <!-- ATR 倍数 -->
-<view class="section">
-  <view class="label">ATR 倍数（例如 1.5）</view>
+<UiSection label="ATR 倍数（例如 1.5）">
   <input
     type="digit"
     value="{{atrMultInput}}"
     placeholder="1.5"
     bindinput="onAtrMultInput"
   />
-</view>
+</UiSection>
+
+<!-- 风控参数 -->
+<UiSection label="风控参数">
+  <view>
+    <view class="sub-label">总本金（U）</view>
+    <input
+      type="digit"
+      value="{{equityInput}}"
+      placeholder="例如 500"
+      bindinput="onEquityInput"
+    />
+
+    <view class="sub-label">单笔风险（%）</view>
+    <input
+      type="digit"
+      value="{{riskPercentInput}}"
+      placeholder="例如 1 或 2"
+      bindinput="onRiskPercentInput"
+    />
+
+    <view class="sub-label">杠杆倍数</view>
+    <input
+      type="digit"
+      value="{{leverageInput}}"
+      placeholder="例如 3 或 5"
+      bindinput="onLeverageInput"
+    />
+  </view>
+</UiSection>
 
 <!-- 开仓方向 -->
-<view class="section">
-  <view class="label">开仓方向</view>
+<UiSection label="开仓方向">
   <picker mode="selector" range="{{directionOptions}}" bindchange="onDirectionChange">
     <view class="picker">
       当前：{{direction === 'long' ? '多单' : '空单'}}
     </view>
   </picker>
-</view>
+</UiSection>
 
 <!-- 开仓价 -->
-<view class="section">
-  <view class="label">开仓价（Entry Price）</view>
+<UiSection label="开仓价（Entry Price）">
   <input
     type="digit"
     value="{{entryPriceInput}}"
-    placeholder="请输入开仓价或点击“用合约价填入开仓价”"
+    placeholder="请输入手动开仓价"
     bindinput="onEntryPriceInput"
   />
-</view>
+</UiSection>
 
-<!-- 按钮 -->
-<button class="btn" bindtap="onCalcTap" loading="{{loading}}">
-  计算 ATR 与止损建议
-</button>
+<!-- 计算按钮 -->
+<UiButton
+  text="计算 ATR、止损与仓位建议"
+  loading="{{loading}}"
+  bind:tap="onCalcTap"
+/>
 
-<!-- 结果 -->
-<view class="result" wx:if="{{atr}}">
-  <view>ATR{{atrPeriodInput}}：{{atr}}</view>
-  <view>开仓价：{{entryPriceInput}}</view>
-  <view wx:if="{{direction === 'long'}}">
-    建议止损价（多单）：{{stopLossPrice}}
-  </view>
-  <view wx:if="{{direction === 'short'}}">
-    建议止损价（空单）：{{stopLossPrice}}
-  </view>
-</view>
+<!-- 结果卡片：交易计划 -->
+<UiResultCard
+  symbol="{{symbol}}"
+  interval="{{interval}}"
+  direction="{{direction}}"
+  atr="{{atr}}"
+  atrPeriodInput="{{atrPeriodInput}}"
+  entryPriceInput="{{entryPriceInput}}"
+  stopLossPrice="{{stopLossPrice}}"
+  riskPercentInput="{{riskPercentInput}}"
+  riskAmount="{{riskAmount}}"
+  stopDistance="{{stopDistance}}"
+  positionNotional="{{positionNotional}}"
+  positionQty="{{positionQty}}"
+  rrRatio="{{rrRatio}}" 
+/>
 
+<!-- 错误提示 -->
 <view class="error" wx:if="{{error}}">
   {{error}}
 </view>

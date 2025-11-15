@@ -1,0 +1,67 @@
+<view class="result-card-wrapper" wx:if="{{atr}}">
+  <view class="direction-strip {{direction === 'long' ? 'strip-long' : 'strip-short'}}"></view>
+
+  <view class="result-card">
+    <!-- 头部标签 -->
+    <view class="result-header">
+      <view class="tag tag-symbol">{{symbol}}</view>
+      <view class="tag tag-interval">{{interval}}</view>
+      <view class="tag tag-direction">
+        {{direction === 'long' ? '多单计划' : '空单计划'}}
+      </view>
+    </view>
+
+    <!-- 核心区：ATR Entry SL -->
+    <view class="result-row">
+      <text class="result-label">ATR{{atrPeriodInput}}</text>
+      <text class="result-value">{{atr}}</text>
+    </view>
+
+    <view class="result-row">
+      <text class="result-label">Entry</text>
+      <text class="result-value">{{entryPriceInput}}</text>
+    </view>
+
+    <view class="result-row">
+      <text class="result-label">Stop Loss</text>
+      <text class="result-value">{{stopLossPrice}}</text>
+    </view>
+
+    <view class="result-row result-small">
+      <text class="result-label"></text>
+      <text class="result-hint">({{stopDistance}} 点距离)</text>
+    </view>
+
+    <view class="result-divider"></view>
+
+    <!-- 风险区 -->
+    <view wx:if="{{positionQty}}">
+      <view class="section-title">风险</view>
+
+      <view class="result-row">
+        <text class="result-label">风险 {{riskPercentInput}}%</text>
+        <text class="result-value">{{riskAmount}}</text>
+      </view>
+
+      <view class="result-row">
+        <text class="result-label">RR</text>
+        <text class="result-value">{{rrRatio}}</text>
+      </view>
+
+      <view class="result-divider"></view>
+
+      <!-- 仓位区 -->
+      <view class="section-title">仓位</view>
+
+      <view class="result-row">
+        <text class="result-label">名义仓位</text>
+        <text class="result-value">{{positionNotional}}</text>
+      </view>
+
+      <view class="result-row">
+        <text class="result-label">仓位数量</text>
+        <text class="result-value result-value-strong">{{positionQty}}</text>
+      </view>
+    </view>
+  </view>
+</view>
